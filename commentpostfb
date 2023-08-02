@@ -1,0 +1,39 @@
+import requests
+
+# URL de la API de Facebook para obtener los posts
+api_url = 'https://graph.facebook.com/v17.0/{id de página}/posts'
+
+# Credenciales de acceso
+access_token = '{token de fb}'
+
+def get_posts_data(url):
+    response = requests.get(url)
+    if response.status_code == 200:
+        return response.json()
+    else:
+        print(f"Error en la solicitud: {response.status_code}")
+        return None
+
+def save_data_to_file(data, filename):
+    with open(filename, 'a', encoding='utf-8') as file:
+        # Omitir las primeras 20 líneas del JSON
+        for post in data['data']:
+            file.write(str(post) + '\n')
+
+# Obtener los datos de todas las páginas iterativamente (máximo 10 páginas si quieres más modificas en el for el nro)
+next_url = api_url + f'?access_token={access_token}&fields=comments&limit=100'
+for i in range(10):
+    posts_data = get_posts_data(next_url)
+    if not posts_data:
+        break
+
+    # Guardar los datos en el archivo TXT
+    txt_filename = r'D:\WSD\posts_data_2023.txt'
+    save_data_to_file(posts_data, txt_filename)
+
+    # Obtener el enlace "next" de la respuesta JSON
+    next_url = posts_data.get('paging', {}).get('next')
+    if not next_url:
+        break
+
+print(f"Se han obtenido los datos de las 10 siguientes páginas y se han guardado en {txt_filename}.")
